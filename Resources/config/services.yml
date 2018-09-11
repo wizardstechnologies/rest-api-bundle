@@ -1,0 +1,34 @@
+services:
+    # wizards rest - to be moved to a bundle
+    wizards_rest.reader:
+        class: WizardsRest\ObjectReader\DoctrineAnnotationReader
+        arguments:
+        - '@annotation_reader'
+
+    wizards_rest.entity_transformer:
+        class: WizardsRest\Transformer\EntityTransformer
+        arguments:
+        - '@wizards_rest.reader'
+
+    wizards_rest.object_manager:
+        class: WizardsRest\ObjectManager\DoctrineOrmObjectManager
+        arguments:
+        - '@doctrine.orm.entity_manager'
+
+    wizards_rest.paginator:
+        class: WizardsRest\Paginator\DoctrineOrmPagerFantaPaginator
+        arguments:
+        - '@router'
+
+    WizardsRest\Serializer:
+        arguments:
+        - 'http://test.com'
+
+    WizardsRest\CollectionManager:
+        arguments:
+        - '@wizards_rest.object_manager'
+        - '@wizards_rest.paginator'
+
+    WizardsRest\Provider:
+        arguments:
+        - '@wizards_rest.entity_transformer'

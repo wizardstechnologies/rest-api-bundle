@@ -1,0 +1,33 @@
+{
+  "name": "wizards/rest-bundle",
+  "description": "Integration of php-rest-api into Symfony.",
+  "keywords": [ "rest", "hateoas", "jsonapi", "api" ],
+  "type": "symfony-bundle",
+  "license": "MIT",
+  "repositories": [
+    {
+      "type": "git",
+      "url": "git@github.com:wizardstechnologies/php-rest-api.git"
+    }
+  ],
+  "authors": [
+    {
+      "name": "Romain Richard",
+      "email": "rrichard.ext@wedigital.garden"
+    }
+  ],
+  "require": {
+    "php": ">7",
+    "wizards/rest-api": "dev-master",
+    "symfony/http-kernel": "^4.1",
+    "symfony/psr-http-message-bridge": "^1.1",
+    "zendframework/zend-diactoros": "^1.8",
+    "sensio/framework-extra-bundle": "^5.2"
+  },
+  "require-dev": {
+  },
+  "autoload": {
+    "psr-0": { "Wizards\\RestBundle": "" }
+  },
+  "target-dir": "Wizards/RestBundle"
+}
