@@ -1,6 +1,6 @@
 <?php
 
-namespace Bigz\HalapiBundle;
+namespace Wizards\RestBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
