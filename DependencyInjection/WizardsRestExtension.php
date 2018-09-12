@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizards\RestApiBundle\DependencyInjection;
+namespace Wizards\RestBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;

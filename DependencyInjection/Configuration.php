@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizards\RestApiBundle\DependencyInjection;
+namespace Wizards\RestBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
