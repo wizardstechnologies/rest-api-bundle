@@ -26,9 +26,17 @@ services:
 
     WizardsRest\CollectionManager:
         arguments:
-        - '@wizards_rest.object_manager'
         - '@wizards_rest.paginator'
+        #- '@wizards_rest.object_manager'
 
     WizardsRest\Provider:
         arguments:
         - '@wizards_rest.entity_transformer'
+
+    Wizards\RestBundle\Subscriber\SerializationSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }
+        arguments:
+            - '@WizardsRest\Serializer'
+            - '@WizardsRest\Provider'
+            - '@WizardsRest\CollectionManager'

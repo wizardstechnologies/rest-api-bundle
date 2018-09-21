@@ -35,7 +35,7 @@ class SerializationSubscriber implements EventSubscriberInterface
      */
     private $psrFactory;
 
-    public function __construct(Serializer $serializer, Provider $provider, CollectionManager $collectionManager)
+    public function __construct(Serializer $serializer, Provider $provider, CollectionManager $collectionManager = null)
     {
         $this->provider = $provider;
         $this->serializer = $serializer;
@@ -43,14 +43,16 @@ class SerializationSubscriber implements EventSubscriberInterface
         $this->psrFactory = new DiactorosFactory();
     }
 
+
     public function onKernelView(GetResponseForControllerResultEvent $event)
     {
         $request = $this->psrFactory->createRequest($event->getRequest());
-        $resource =  $this->provider->transform($event->getControllerResult(), $request);
+        $resource = $this->provider->transform($event->getControllerResult(), $request);
 
         // Add pagination if resource is a collection
         if ($resource instanceof Collection) {
-            $resource->setPaginator($this->collectionManager->getPaginationAdapter($request));
+            
+            //$resource->setPaginator($this->collectionManager->getPaginationAdapter($request));
         }
 
         $response = new Response(
