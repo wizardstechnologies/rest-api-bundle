@@ -18,11 +18,12 @@
   ],
   "require": {
     "php": ">7",
-    "wizards/rest-api": "0.2.1",
+    "wizards/rest-api": "0.3",
     "symfony/http-kernel": "^4.1",
     "symfony/psr-http-message-bridge": "^1.1",
     "zendframework/zend-diactoros": "^1.8",
-    "sensio/framework-extra-bundle": "^5.2"
+    "sensio/framework-extra-bundle": "^5.2",
+    "symfony/options-resolver": "^4.1"
   },
   "require-dev": {
   },
