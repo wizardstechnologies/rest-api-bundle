@@ -1,9 +1,6 @@
 services:
-    # wizards rest - to be moved to a bundle
     wizards_rest.reader:
-        class: WizardsRest\ObjectReader\DoctrineAnnotationReader
-        arguments:
-        - '@annotation_reader'
+        class: ''
 
     wizards_rest.entity_transformer:
         class: WizardsRest\Transformer\EntityTransformer
@@ -16,18 +13,18 @@ services:
         - '@doctrine.orm.entity_manager'
 
     wizards_rest.paginator:
-        class: WizardsRest\Paginator\DoctrineOrmPagerFantaPaginator
+        class: ''
         arguments:
         - '@router'
 
     WizardsRest\Serializer:
         arguments:
-        - 'http://test.com'
+        - ''
 
     WizardsRest\CollectionManager:
         arguments:
         - '@wizards_rest.paginator'
-        #- '@wizards_rest.object_manager'
+        - '@wizards_rest.object_manager'
 
     WizardsRest\Provider:
         arguments:
@@ -39,4 +36,4 @@ services:
         arguments:
             - '@WizardsRest\Serializer'
             - '@WizardsRest\Provider'
-            - '@WizardsRest\CollectionManager'
+            - '@wizards_rest.paginator'

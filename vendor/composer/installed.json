@@ -2066,12 +2066,12 @@
     },
     {
         "name": "wizards/rest-api",
-        "version": "dev-master",
-        "version_normalized": "9999999-dev",
+        "version": "0.3",
+        "version_normalized": "0.3.0.0",
         "source": {
             "type": "git",
             "url": "git@github.com:wizardstechnologies/php-rest-api.git",
-            "reference": "ac1353e0284c8cf33e3af6dd222905da45a454b3"
+            "reference": "43a3b2bf74a25340060a6f73538c927df4245137"
         },
         "require": {
             "league/fractal": "^0.17.0",
@@ -2095,7 +2095,7 @@
             "pagerfanta/pagerfanta": "^2.0",
             "symfony/routing": "^4.1"
         },
-        "time": "2018-08-27T01:21:05+00:00",
+        "time": "2018-09-22T00:02:52+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {

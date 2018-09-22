@@ -10,6 +10,13 @@ Register it in your AppKernel
 new Bigz\HalapiBundle\BigzHalapiBundle(),
 ```
 
+# configure
+```
+# config/bundles/wizards_rest.yaml
+wizards_rest:
+	data_source: orm|array
+```
+
 # Usage
 It provides a subscriber to serialize your responses to jsonapi, and
 a paramconverter to inject psr7 requests
