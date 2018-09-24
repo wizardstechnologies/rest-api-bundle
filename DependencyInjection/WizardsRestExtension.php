@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
+use Wizards\RestBundle\Subscriber\SerializationSubscriber;
 use WizardsRest\ObjectReader\ArrayReader;
 use WizardsRest\ObjectReader\DoctrineAnnotationReader;
 use WizardsRest\Paginator\ArrayPagerfantaPaginator;
@@ -64,5 +65,8 @@ class WizardsRestExtension extends Extension
         $readerDefinition = $container->getDefinition('wizards_rest.reader');
         $readerDefinition->setClass($this->getReaderClass($config));
         $readerDefinition->setArguments($this->getReaderArguments($config, $container));
+
+        $subscriberDefinition = $container->getDefinition(SerializationSubscriber::class);
+        $subscriberDefinition->addArgument($config['format']);
     }
 }

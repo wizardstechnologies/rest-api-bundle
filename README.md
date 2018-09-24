@@ -15,6 +15,9 @@ new Bigz\HalapiBundle\BigzHalapiBundle(),
 # config/bundles/wizards_rest.yaml
 wizards_rest:
 	data_source: orm|array
+	reader: annotation|configuration|array
+	format: jsonapi|array
+	base_url: your_url
 ```
 
 # Usage
