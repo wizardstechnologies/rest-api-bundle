@@ -4,12 +4,6 @@
   "keywords": [ "rest", "hateoas", "jsonapi", "api" ],
   "type": "symfony-bundle",
   "license": "MIT",
-  "repositories": [
-    {
-      "type": "git",
-      "url": "git@github.com:wizardstechnologies/php-rest-api.git"
-    }
-  ],
   "authors": [
     {
       "name": "Romain Richard",
@@ -22,8 +16,7 @@
     "symfony/http-kernel": "^4.1",
     "symfony/psr-http-message-bridge": "^1.1",
     "zendframework/zend-diactoros": "^1.8",
-    "sensio/framework-extra-bundle": "^5.2",
-    "symfony/options-resolver": "^4.1"
+    "sensio/framework-extra-bundle": "^5.2"
   },
   "require-dev": {
   },
