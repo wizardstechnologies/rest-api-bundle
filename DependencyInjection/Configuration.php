@@ -15,7 +15,8 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
                 ->enumNode('data_source')->values(['orm', 'array'])->defaultValue('array')->end()
-                ->enumNode('reader')->values(['annotation', 'array'])->defaultValue('array')->end()
+                ->enumNode('reader')->values(['annotation', 'configuration', 'array'])->defaultValue('array')->end()
+                ->enumNode('format')->values(['jsonapi', 'json', 'hal', 'xml', 'array'])->defaultValue('array')->end()
                 ->scalarNode('base_url')->defaultValue('http://test.com')->end()
             ->end()
         ;

@@ -4,6 +4,7 @@ namespace Wizards\RestBundle\Subscriber;
 
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\Item;
+use League\Fractal\Resource\ResourceAbstract;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,8 +17,7 @@ use WizardsRest\Provider;
 use WizardsRest\Serializer;
 
 /**
- * Serializes a Response to JsonApi.
- * Should be configurable !
+ * Serializes a controller output to a configured format response.
  */
 class SerializationSubscriber implements EventSubscriberInterface
 {
@@ -41,18 +41,51 @@ class SerializationSubscriber implements EventSubscriberInterface
      */
     private $psrFactory;
 
+    /**
+     * @var string
+     */
+    private $format;
+
     public function __construct(
         Serializer $serializer,
         Provider $provider,
-        PaginatorInterface $paginator
+        PaginatorInterface $paginator,
+        string $format
     ) {
         $this->provider = $provider;
         $this->serializer = $serializer;
         $this->paginator = $paginator;
         $this->psrFactory = new DiactorosFactory();
+        $this->format = $format;
     }
 
-    private function getResource($content, Request $request)
+    public function onKernelView(GetResponseForControllerResultEvent $event): void
+    {
+        $request = $this->psrFactory->createRequest($event->getRequest());
+        $resource = $this->getResource($event->getControllerResult(), $event->getRequest());
+
+        // Add pagination if resource is a collection
+        if ($resource instanceof Collection) {
+            $resource->setPaginator($this->paginator->getPaginationAdapter($resource, $request));
+        }
+
+        $response = new Response(
+            $this->serializer->serialize($resource, $this->getSpecification(), $this->getFormat()),
+            200,
+            $this->getFormatSpecificHeaders()
+        );
+
+        $event->setResponse($response);
+    }
+
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::VIEW => 'onKernelView'
+        ];
+    }
+
+    private function getResource($content, Request $request): ResourceAbstract
     {
         // this should come from data_source config
         $transformer = (isset($content['id']) || isset($content[0]['id']))
@@ -69,29 +102,34 @@ class SerializationSubscriber implements EventSubscriberInterface
         return $resource;
     }
 
-    public function onKernelView(GetResponseForControllerResultEvent $event)
+    private function getSpecification(): string
     {
-        $request = $this->psrFactory->createRequest($event->getRequest());
-        $resource = $this->getResource($event->getControllerResult(), $event->getRequest());
-
-        // Add pagination if resource is a collection
-        if ($resource instanceof Collection) {
-            $resource->setPaginator($this->paginator->getPaginationAdapter($resource, $request));
+        if ('jsonapi' === $this->format) {
+            return Serializer::FORMAT_JSON;
         }
 
-        $response = new Response(
-            $this->serializer->serialize($resource, Serializer::SPEC_JSONAPI, Serializer::FORMAT_JSON),
-            200,
-            ['Content-Type' => 'application/vnd.api+json']
-        );
+        if ('array' === $this->format) {
+            return Serializer::FORMAT_ARRAY;
+        }
 
-        $event->setResponse($response);
+        return Serializer::FORMAT_JSON;
     }
 
-    public static function getSubscribedEvents(): array
+    private function getFormat(): string
     {
-        return [
-            KernelEvents::VIEW => 'onKernelView'
-        ];
+        if ('jsonapi' === $this->format) {
+            return Serializer::SPEC_JSONAPI;
+        }
+
+        return Serializer::SPEC_ARRAY;
+    }
+
+    private function getFormatSpecificHeaders(): array
+    {
+        if ('jsonapi' === $this->format) {
+            return ['Content-Type' => 'application/vnd.api+json'];
+        }
+
+        return [];
     }
 }
