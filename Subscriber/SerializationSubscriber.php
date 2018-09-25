@@ -93,7 +93,14 @@ class SerializationSubscriber implements EventSubscriberInterface
 
     public function onKernelController(FilterControllerEvent $event)
     {
-        $this->controller = $event->getController();
+        $controller = $event->getController();
+
+        if (is_array($controller)) {
+            $this->controller = $controller[0];
+        } else {
+            // we don't manage controller as closures
+            $this->controller = null;
+        }
     }
 
     public static function getSubscribedEvents(): array
