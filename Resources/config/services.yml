@@ -31,8 +31,8 @@ services:
 
     WizardsRest\Provider:
         arguments:
-        - '@wizards_rest.fractal_manager'
         - '@wizards_rest.entity_transformer'
+        - '@wizards_rest.fractal_manager'
 
     Wizards\RestBundle\Subscriber\SerializationSubscriber:
         tags:
