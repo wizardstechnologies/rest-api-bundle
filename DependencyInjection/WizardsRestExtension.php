@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\DependencyInjection\Reference;
 use Wizards\RestBundle\Subscriber\SerializationSubscriber;
 use WizardsRest\ObjectReader\ArrayReader;
 use WizardsRest\ObjectReader\DoctrineAnnotationReader;
@@ -29,16 +30,16 @@ class WizardsRestExtension extends Extension
         if ('annotation' === $config['reader']) {
             return DoctrineAnnotationReader::class;
         }
-        
+
         return ArrayReader::class;
     }
 
-    private function getReaderArguments(array $config, ContainerBuilder $container)
+    private function getReaderArguments(array $config, ContainerBuilder $container): array
     {
         if ('annotation' === $config['reader']) {
-            return $container->get('@annotation_reader');
+            return [new Reference('annotation_reader')];
         }
-        
+
         return [];
     }
 

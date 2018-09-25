@@ -88,7 +88,7 @@ class SerializationSubscriber implements EventSubscriberInterface
     private function getResource($content, Request $request): ResourceAbstract
     {
         // this should come from data_source config
-        $transformer = (isset($content['id']) || isset($content[0]['id']))
+        $transformer = is_array($content) && (isset($content['id']) || isset($content[0]['id']))
             ? function ($data) { return $data; }
             : null;
 
@@ -102,7 +102,7 @@ class SerializationSubscriber implements EventSubscriberInterface
         return $resource;
     }
 
-    private function getSpecification(): string
+    private function getFormat(): string
     {
         if ('jsonapi' === $this->format) {
             return Serializer::FORMAT_JSON;
@@ -115,7 +115,7 @@ class SerializationSubscriber implements EventSubscriberInterface
         return Serializer::FORMAT_JSON;
     }
 
-    private function getFormat(): string
+    private function getSpecification(): string
     {
         if ('jsonapi' === $this->format) {
             return Serializer::SPEC_JSONAPI;

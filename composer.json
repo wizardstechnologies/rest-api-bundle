@@ -12,13 +12,14 @@
   ],
   "require": {
     "php": ">7",
-    "wizards/rest-api": "0.3",
+    "wizards/rest-api": "0.4",
     "symfony/http-kernel": "^4.1",
     "symfony/psr-http-message-bridge": "^1.1",
     "zendframework/zend-diactoros": "^1.8",
     "sensio/framework-extra-bundle": "^5.2"
   },
   "require-dev": {
+    "symfony/form": "^4.1"
   },
   "autoload": {
     "psr-0": { "Wizards\\RestBundle": "" }
