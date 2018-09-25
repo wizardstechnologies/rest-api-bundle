@@ -12,6 +12,7 @@ use WizardsRest\ObjectReader\ArrayReader;
 use WizardsRest\ObjectReader\DoctrineAnnotationReader;
 use WizardsRest\Paginator\ArrayPagerfantaPaginator;
 use WizardsRest\Paginator\DoctrineOrmPagerFantaPaginator;
+use WizardsRest\Provider;
 use WizardsRest\Serializer;
 
 class WizardsRestExtension extends Extension
@@ -67,6 +68,11 @@ class WizardsRestExtension extends Extension
         $readerDefinition->setClass($this->getReaderClass($config));
         $readerDefinition->setArguments($this->getReaderArguments($config, $container));
 
+        // configure the provider
+        $subscriberDefinition = $container->getDefinition(Provider::class);
+        $subscriberDefinition->addArgument(new Reference('wizards_rest.reader'));
+
+        // configure the subscriber
         $subscriberDefinition = $container->getDefinition(SerializationSubscriber::class);
         $subscriberDefinition->addArgument($config['format']);
     }

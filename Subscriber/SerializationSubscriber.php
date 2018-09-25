@@ -2,16 +2,17 @@
 
 namespace Wizards\RestBundle\Subscriber;
 
+use Doctrine\Common\Annotations\Reader;
 use League\Fractal\Resource\Collection;
-use League\Fractal\Resource\Item;
 use League\Fractal\Resource\ResourceAbstract;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
-use WizardsRest\CollectionManager;
+use WizardsRest\Annotation\Type;
 use WizardsRest\Paginator\PaginatorInterface;
 use WizardsRest\Provider;
 use WizardsRest\Serializer;
@@ -42,19 +43,31 @@ class SerializationSubscriber implements EventSubscriberInterface
     private $psrFactory;
 
     /**
+     * @var Reader
+     */
+    private $reader;
+
+    /**
      * @var string
      */
     private $format;
+
+    /**
+     * @var callable
+     */
+    private $controller;
 
     public function __construct(
         Serializer $serializer,
         Provider $provider,
         PaginatorInterface $paginator,
+        Reader $reader,
         string $format
     ) {
         $this->provider = $provider;
         $this->serializer = $serializer;
         $this->paginator = $paginator;
+        $this->reader = $reader;
         $this->psrFactory = new DiactorosFactory();
         $this->format = $format;
     }
@@ -78,28 +91,48 @@ class SerializationSubscriber implements EventSubscriberInterface
         $event->setResponse($response);
     }
 
+    public function onKernelController(FilterControllerEvent $event)
+    {
+        $this->controller = $event->getController();
+    }
+
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::VIEW => 'onKernelView'
+            KernelEvents::VIEW => 'onKernelView',
+            KernelEvents::CONTROLLER => 'onKernelController'
         ];
     }
 
     private function getResource($content, Request $request): ResourceAbstract
     {
-        // this should come from data_source config
-        $transformer = is_array($content) && (isset($content['id']) || isset($content[0]['id']))
-            ? function ($data) { return $data; }
-            : null;
-
-        $resource = $this->provider->transform(
+        return $this->provider->transform(
             $content,
             $this->psrFactory->createRequest($request),
-            $transformer,
-            basename($request->getPathInfo())
+            $this->getTransformer($content),
+            $this->getResourceName()
+        );
+    }
+
+    private function getResourceName()
+    {
+        $resourceTypeAnnotation = $this->reader->getClassAnnotation(
+            new \ReflectionClass($this->controller),
+            Type::class
         );
 
-        return $resource;
+        if (null !== $resourceTypeAnnotation) {
+            return $resourceTypeAnnotation->getType();
+        }
+
+        return null;
+    }
+
+    private function getTransformer($content)
+    {
+        return is_array($content) && (isset($content['id']) || isset($content[0]['id']))
+            ? function ($data) { return $data; }
+            : null;
     }
 
     private function getFormat(): string

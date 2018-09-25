@@ -41,3 +41,4 @@ services:
             - '@WizardsRest\Serializer'
             - '@WizardsRest\Provider'
             - '@wizards_rest.paginator'
+            - '@annotation_reader'
