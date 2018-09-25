@@ -60,7 +60,7 @@ class WizardsRestExtension extends Extension
 
         // configure the serializer
         $serializerDefinition = $container->getDefinition(Serializer::class);
-        $serializerDefinition->replaceArgument(0, $config['base_url']);
+        $serializerDefinition->addArgument($config['base_url']);
 
         // configure the reader
         $readerDefinition = $container->getDefinition('wizards_rest.reader');

@@ -1,4 +1,7 @@
 services:
+    wizards_rest.fractal_manager:
+        class: League\Fractal\Manager
+
     wizards_rest.reader:
         class: ''
 
@@ -19,7 +22,7 @@ services:
 
     WizardsRest\Serializer:
         arguments:
-        - ''
+        - '@wizards_rest.fractal_manager'
 
     WizardsRest\CollectionManager:
         arguments:
@@ -28,6 +31,7 @@ services:
 
     WizardsRest\Provider:
         arguments:
+        - '@wizards_rest.fractal_manager'
         - '@wizards_rest.entity_transformer'
 
     Wizards\RestBundle\Subscriber\SerializationSubscriber:
