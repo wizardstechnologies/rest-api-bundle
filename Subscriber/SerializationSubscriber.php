@@ -68,8 +68,9 @@ class SerializationSubscriber implements EventSubscriberInterface
         $this->serializer = $serializer;
         $this->paginator = $paginator;
         $this->reader = $reader;
-        $this->psrFactory = new DiactorosFactory();
         $this->format = $format;
+        $this->controller = null;
+        $this->psrFactory = new DiactorosFactory();
     }
 
     public function onKernelView(GetResponseForControllerResultEvent $event): void
@@ -96,10 +97,7 @@ class SerializationSubscriber implements EventSubscriberInterface
         $controller = $event->getController();
 
         if (is_array($controller)) {
-            $this->controller = $controller[0];
-        } else {
-            // we don't manage controller as closures
-            $this->controller = null;
+            $this->controller = $controller;
         }
     }
 
@@ -121,10 +119,29 @@ class SerializationSubscriber implements EventSubscriberInterface
         );
     }
 
+    /**
+     * Try to get the resource name/type by annotation, first on the method then on the class of the controller.
+     * @return null
+     * @throws \ReflectionException
+     */
     private function getResourceName()
     {
+        if (null === $this->controller) {
+            return null;
+        }
+
+        $reflection = new \ReflectionClass($this->controller[0]);
+        $methodTypeAnnotation = $this->reader->getMethodAnnotation(
+            $reflection->getMethod($this->controller[1]),
+            Type::class
+        );
+
+        if (null !== $methodTypeAnnotation) {
+            return $methodTypeAnnotation->getType();
+        }
+
         $resourceTypeAnnotation = $this->reader->getClassAnnotation(
-            new \ReflectionClass($this->controller),
+            $reflection,
             Type::class
         );
 
