@@ -1,6 +1,6 @@
 <?php
 
-namespace Controller;
+namespace Wizards\RestBundle\Controller;
 
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
