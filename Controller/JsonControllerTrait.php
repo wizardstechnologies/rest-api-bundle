@@ -43,6 +43,6 @@ trait JsonControllerTrait
             return [];
         }
 
-        return [$form->getName() => $jsonApi['attributes']];
+        return [$form->getName() => $jsonApi['data']['attributes']];
     }
 }
