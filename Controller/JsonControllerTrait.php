@@ -43,6 +43,10 @@ trait JsonControllerTrait
             return [];
         }
 
-        return [$form->getName() => $jsonApi['data']['attributes']];
+        $fields = isset($jsonApi['data']['id'])
+            ? array_merge(['id' => $jsonApi['data']['id']], $jsonApi['data']['attributes'])
+            : $jsonApi['data']['attributes'];
+
+        return [$form->getName() => $fields];
     }
 }
