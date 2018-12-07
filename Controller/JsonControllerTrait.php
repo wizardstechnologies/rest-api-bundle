@@ -47,6 +47,12 @@ trait JsonControllerTrait
             ? array_merge(['id' => $jsonApi['data']['id']], $jsonApi['data']['attributes'])
             : $jsonApi['data']['attributes'];
 
+        if (isset($jsonApi['relationships']) && is_array($jsonApi['relationships'])) {
+            foreach ($jsonApi['relationships'] as $relationshipName => $relationshipValue) {
+                $fields[$relationshipName] = $relationshipValue['data']['id'];
+            }
+        }
+
         return [$form->getName() => $fields];
     }
 }
