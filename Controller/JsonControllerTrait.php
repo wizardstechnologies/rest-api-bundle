@@ -4,9 +4,24 @@ namespace Wizards\RestBundle\Controller;
 
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Wizards\RestBundle\Exception\MultiPartHttpException;
 
+/**
+ * A trait that helps in building restful json controllers.
+ */
 trait JsonControllerTrait
 {
+    protected function throwRestErrorFromForm(FormInterface $form)
+    {
+        throw new MultiPartHttpException(400, $this->convertFormErrorsToArray($form));
+    }
+
+    /**
+     * Transform a json request body to a valid symfony form and submits it.
+     *
+     * @param FormInterface $form
+     * @param Request $request
+     */
     protected function handleJsonForm(FormInterface $form, Request $request)
     {
         $body = $this->decode($request, $form);
@@ -54,5 +69,31 @@ trait JsonControllerTrait
         }
 
         return [$form->getName() => $fields];
+    }
+
+    /**
+     * Transorm form errors in a simple array.
+     *
+     * @param FormInterface $form
+     *
+     * @return array
+     */
+    private function convertFormErrorsToArray(FormInterface $form)
+    {
+        $errors = [];
+
+        foreach ($form->getErrors() as $error) {
+            $errors[] = $error->getMessage();
+        }
+
+        foreach ($form->all() as $key => $child) {
+            $childrenErrors = $this->convertFormErrorsToArray($child);
+
+            foreach ($childrenErrors as $childrenError) {
+                $errors[] = sprintf('%s: %s', $key, $childrenError);
+            }
+        }
+
+        return $errors;
     }
 }
