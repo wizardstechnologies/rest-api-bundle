@@ -3,10 +3,8 @@
 namespace Wizards\RestBundle\Subscriber;
 
 use Doctrine\Common\Annotations\Reader;
-use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\ResourceAbstract;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
@@ -73,26 +71,28 @@ class SerializationSubscriber implements EventSubscriberInterface
         $this->psrFactory = new DiactorosFactory();
     }
 
+    /**
+     * Catches returns from Controllers, and serialize their content.
+     *
+     * @param GetResponseForControllerResultEvent $event
+     *
+     * @throws \ReflectionException
+     */
     public function onKernelView(GetResponseForControllerResultEvent $event): void
     {
-        $request = $this->psrFactory->createRequest($event->getRequest());
-        $resource = $this->getResource($event->getControllerResult(), $event->getRequest());
-
-        // Add pagination if resource is a collection
-        if ($resource instanceof Collection) {
-            $resource->setPaginator($this->paginator->getPaginationAdapter($resource, $request));
-        }
-
-        $response = new Response(
-            $this->serializer->serialize($resource, $this->getSpecification(), $this->getFormat()),
+        $event->setResponse(new Response(
+            $this->serializer->serialize($this->getResource($event), $this->getSpecification(), $this->getFormat()),
             200,
             $this->getFormatSpecificHeaders()
-        );
-
-        $event->setResponse($response);
+        ));
     }
 
-    public function onKernelController(FilterControllerEvent $event)
+    /**
+     * Stores a link to a controller. Useful to read its annotations.
+     *
+     * @param FilterControllerEvent $event
+     */
+    public function onKernelController(FilterControllerEvent $event): void
     {
         $controller = $event->getController();
 
@@ -109,14 +109,37 @@ class SerializationSubscriber implements EventSubscriberInterface
         ];
     }
 
-    private function getResource($content, Request $request): ResourceAbstract
+    /**
+     * Transforms a entity or a collection to a Fractal resource.
+     * If it is a collection, paginate it.
+     *
+     * @param GetResponseForControllerResultEvent $event
+     *
+     * @return ResourceAbstract
+     *
+     * @throws \ReflectionException
+     */
+    private function getResource(GetResponseForControllerResultEvent $event): ResourceAbstract
     {
-        return $this->provider->transform(
-            $content,
-            $this->psrFactory->createRequest($request),
-            $this->getTransformer($content),
+        $request = $this->psrFactory->createRequest($event->getRequest());
+        $result = $event->getControllerResult();
+
+        if ($this->isCollection($result)) {
+            $result = $this->paginator->paginate($result, $request);
+        }
+
+        $resource = $this->provider->transform(
+            $result,
+            $request,
+            $this->getTransformer($result),
             $this->getResourceName()
         );
+
+        if ($this->isCollection($result)) {
+            $resource->setPaginator($this->paginator->getPaginationAdapter($resource, $request));
+        }
+
+        return $resource;
     }
 
     /**
@@ -188,5 +211,27 @@ class SerializationSubscriber implements EventSubscriberInterface
         }
 
         return [];
+    }
+
+    /**
+     * Is the given resource an collection of resources ?
+     *
+     * @param mixed $resource
+     *
+     * @return bool
+     */
+    private function isCollection($resource): bool
+    {
+        // This is a resource presented as an array
+        if (is_array($resource) && count($resource) === count($resource, COUNT_RECURSIVE)) {
+            return false;
+        }
+
+        // It's a collection
+        if (is_array($resource) || $resource instanceof \Traversable) {
+            return true;
+        }
+
+        return false;
     }
 }
