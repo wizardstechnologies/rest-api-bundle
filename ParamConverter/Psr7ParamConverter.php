@@ -9,12 +9,7 @@ use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Class Psr7ParamConverter
  * Converts a Symfony Request to a Psr7 Request
- *
- * @author Romain Richard
- *
- * @package Wizards\RestBundle\ParamConverter
  */
 class Psr7ParamConverter implements ParamConverterInterface
 {

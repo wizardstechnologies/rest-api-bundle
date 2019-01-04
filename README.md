@@ -7,7 +7,7 @@ composer require wizards/rest-bundle
 
 Register it in your AppKernel
 ```
-new Bigz\HalapiBundle\BigzHalapiBundle(),
+new Wizards\RestBundle\WizardsRestBundle(),
 ```
 
 # configure
@@ -21,11 +21,17 @@ wizards_rest:
 ```
 
 # Usage
-It provides a subscriber to serialize your responses to jsonapi, and
-a paramconverter to inject psr7 requests
+Create a REST API the easy and configurable way !
+
+This bundle ease the use of wizard's php rest api, and provide some extra goodies for symfony:
+- a subscriber to automatically serialize your responses
+- a subscriber to automatically serialize your exceptions
+- a paramconverter to inject PSR-7 requests in your controllers
+- a multi-part exception to easily serialize multiple errors (such as the one from forms)
+- a controller trait that helps on serializing input data from json and jsonapi
 
 # Further Documentation
 Have a look at http://github.com/wizardstechnologies/php-rest-api
 
 # TODO
-- (MUST) Provide configuration options to use the implementation of your choiche (ORM, ODM, ...)
+- (MUST) Implement ODM

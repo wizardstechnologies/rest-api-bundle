@@ -72,7 +72,7 @@ trait JsonControllerTrait
     }
 
     /**
-     * Transorm form errors in a simple array.
+     * Transform form errors in a simple array.
      *
      * @param FormInterface $form
      *
