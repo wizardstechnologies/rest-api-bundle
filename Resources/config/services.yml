@@ -11,9 +11,7 @@ services:
         - '@wizards_rest.reader'
 
     wizards_rest.object_manager:
-        class: WizardsRest\ObjectManager\DoctrineOrmObjectManager
-        arguments:
-        - '@doctrine.orm.entity_manager'
+        class: ''
 
     wizards_rest.paginator:
         class: ''

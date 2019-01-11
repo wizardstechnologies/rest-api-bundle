@@ -8,6 +8,8 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
 use Wizards\RestBundle\Subscriber\SerializationSubscriber;
+use WizardsRest\ObjectManager\DoctrineOrmObjectManager;
+use WizardsRest\ObjectManager\ArrayObjectManager;
 use WizardsRest\ObjectReader\ArrayReader;
 use WizardsRest\ObjectReader\DoctrineAnnotationReader;
 use WizardsRest\Paginator\ArrayPagerfantaPaginator;
@@ -35,10 +37,28 @@ class WizardsRestExtension extends Extension
         return ArrayReader::class;
     }
 
-    private function getReaderArguments(array $config, ContainerBuilder $container): array
+    private function getReaderArguments(array $config): array
     {
         if ('annotation' === $config['reader']) {
             return [new Reference('annotation_reader')];
+        }
+
+        return [];
+    }
+
+    private function getObjectManagerClass(array $config)
+    {
+        if (isset($config['data_source']) && 'orm' === $config['data_source']) {
+            return DoctrineOrmObjectManager::class;
+        }
+
+        return ArrayObjectManager::class;
+    }
+
+    private function getObjectManagerArguments(array $config): array
+    {
+        if ('annotation' === $config['reader']) {
+            return [new Reference('doctrine.orm.entity_manager')];
         }
 
         return [];
@@ -66,7 +86,7 @@ class WizardsRestExtension extends Extension
         // configure the reader
         $readerDefinition = $container->getDefinition('wizards_rest.reader');
         $readerDefinition->setClass($this->getReaderClass($config));
-        $readerDefinition->setArguments($this->getReaderArguments($config, $container));
+        $readerDefinition->setArguments($this->getReaderArguments($config));
 
         // configure the provider
         $subscriberDefinition = $container->getDefinition(Provider::class);
@@ -75,5 +95,10 @@ class WizardsRestExtension extends Extension
         // configure the subscriber
         $subscriberDefinition = $container->getDefinition(SerializationSubscriber::class);
         $subscriberDefinition->addArgument($config['format']);
+
+        // configure the object manager
+        $managerDefinition = $container->getDefinition('wizards_rest.object_manager');
+        $managerDefinition->setClass($this->getObjectManagerClass($config));
+        $managerDefinition->setArguments($this->getObjectManagerArguments($config));
     }
 }
