@@ -42,3 +42,7 @@ services:
             - '@WizardsRest\Provider'
             - '@wizards_rest.paginator'
             - '@annotation_reader'
+
+    Wizards\RestBundle\Subscriber\ExceptionSubscriber:
+        tags:
+            - { name: kernel.event_subscriber }
