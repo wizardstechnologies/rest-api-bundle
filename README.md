@@ -10,7 +10,7 @@ Register it in your AppKernel
 new Wizards\RestBundle\WizardsRestBundle(),
 ```
 
-# configure
+# Configure
 ```
 # config/bundles/wizards_rest.yaml
 wizards_rest:

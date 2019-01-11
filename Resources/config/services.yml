@@ -32,14 +32,23 @@ services:
         - '@wizards_rest.entity_transformer'
         - '@wizards_rest.fractal_manager'
 
+    wizards_rest.format_options_getter:
+        class: Wizards\RestBundle\Services\FormatOptions
+
+    wizards_rest.fractal_resource_provider:
+        class: Wizards\RestBundle\Services\ResourceProvider
+        arguments:
+            - '@WizardsRest\Provider'
+            - '@wizards_rest.paginator'
+            - '@annotation_reader'
+
     Wizards\RestBundle\Subscriber\SerializationSubscriber:
         tags:
             - { name: kernel.event_subscriber }
         arguments:
             - '@WizardsRest\Serializer'
-            - '@WizardsRest\Provider'
-            - '@wizards_rest.paginator'
-            - '@annotation_reader'
+            - '@wizards_rest.fractal_resource_provider'
+            - '@wizards_rest.format_options_getter'
 
     Wizards\RestBundle\Subscriber\ExceptionSubscriber:
         tags:
