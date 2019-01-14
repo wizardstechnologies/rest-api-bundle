@@ -1,5 +1,7 @@
 Symfony bundle for wizards/php-rest-api
 
+[![Build Status](https://travis-ci.org/wizardstechnologies/rest-api-bundle.svg?branch=master)](https://travis-ci.org/wizardstechnologies/rest-api-bundle)
+
 # Install
 ```
 composer require wizards/rest-bundle
