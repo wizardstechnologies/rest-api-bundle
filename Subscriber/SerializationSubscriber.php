@@ -2,7 +2,6 @@
 
 namespace Wizards\RestBundle\Subscriber;
 
-use Doctrine\Common\Annotations\Reader;
 use League\Fractal\Resource\ResourceAbstract;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -10,9 +9,8 @@ use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
-use WizardsRest\Annotation\Type;
-use WizardsRest\Paginator\PaginatorInterface;
-use WizardsRest\Provider;
+use Wizards\RestBundle\Services\FormatOptions;
+use Wizards\RestBundle\Services\ResourceProvider;
 use WizardsRest\Serializer;
 
 /**
@@ -21,54 +19,33 @@ use WizardsRest\Serializer;
 class SerializationSubscriber implements EventSubscriberInterface
 {
     /**
-     * @var Provider
-     */
-    private $provider;
-
-    /**
      * @var Serializer
      */
     private $serializer;
 
     /**
-     * @var PaginatorInterface
-     */
-    private $paginator;
-
-    /**
      * @var DiactorosFactory
      */
     private $psrFactory;
+    /**
+     * @var FormatOptions
+     */
+    private $optionsFormatter;
 
     /**
-     * @var Reader
+     * @var ResourceProvider
      */
-    private $reader;
-
-    /**
-     * @var string
-     */
-    private $format;
-
-    /**
-     * @var callable
-     */
-    private $controller;
+    private $resourceProvider;
 
     public function __construct(
         Serializer $serializer,
-        Provider $provider,
-        PaginatorInterface $paginator,
-        Reader $reader,
-        string $format
+        ResourceProvider $resourceProvider,
+        FormatOptions $optionsFormatter
     ) {
-        $this->provider = $provider;
         $this->serializer = $serializer;
-        $this->paginator = $paginator;
-        $this->reader = $reader;
-        $this->format = $format;
-        $this->controller = null;
         $this->psrFactory = new DiactorosFactory();
+        $this->resourceProvider = $resourceProvider;
+        $this->optionsFormatter = $optionsFormatter;
     }
 
     /**
@@ -81,9 +58,13 @@ class SerializationSubscriber implements EventSubscriberInterface
     public function onKernelView(GetResponseForControllerResultEvent $event): void
     {
         $event->setResponse(new Response(
-            $this->serializer->serialize($this->getResource($event), $this->getSpecification(), $this->getFormat()),
+            $this->serializer->serialize(
+                $this->getResource($event),
+                $this->optionsFormatter->getSpecification(),
+                $this->optionsFormatter->getFormat()
+            ),
             200,
-            $this->getFormatSpecificHeaders()
+            $this->optionsFormatter->getFormatSpecificHeaders()
         ));
     }
 
@@ -97,7 +78,7 @@ class SerializationSubscriber implements EventSubscriberInterface
         $controller = $event->getController();
 
         if (is_array($controller)) {
-            $this->controller = $controller;
+            $this->resourceProvider->setController($controller);
         }
     }
 
@@ -124,114 +105,6 @@ class SerializationSubscriber implements EventSubscriberInterface
         $request = $this->psrFactory->createRequest($event->getRequest());
         $result = $event->getControllerResult();
 
-        if ($this->isCollection($result)) {
-            $result = $this->paginator->paginate($result, $request);
-        }
-
-        $resource = $this->provider->transform(
-            $result,
-            $request,
-            $this->getTransformer($result),
-            $this->getResourceName()
-        );
-
-        if ($this->isCollection($result)) {
-            $resource->setPaginator($this->paginator->getPaginationAdapter($resource, $request));
-        }
-
-        return $resource;
-    }
-
-    /**
-     * Try to get the resource name/type by annotation, first on the method then on the class of the controller.
-     * @return null
-     * @throws \ReflectionException
-     */
-    private function getResourceName()
-    {
-        if (null === $this->controller) {
-            return null;
-        }
-
-        $reflection = new \ReflectionClass($this->controller[0]);
-        $methodTypeAnnotation = $this->reader->getMethodAnnotation(
-            $reflection->getMethod($this->controller[1]),
-            Type::class
-        );
-
-        if (null !== $methodTypeAnnotation) {
-            return $methodTypeAnnotation->getType();
-        }
-
-        $resourceTypeAnnotation = $this->reader->getClassAnnotation(
-            $reflection,
-            Type::class
-        );
-
-        if (null !== $resourceTypeAnnotation) {
-            return $resourceTypeAnnotation->getType();
-        }
-
-        return null;
-    }
-
-    private function getTransformer($content)
-    {
-        return is_array($content) && (isset($content['id']) || isset($content[0]['id']))
-            ? function ($data) { return $data; }
-            : null;
-    }
-
-    private function getFormat(): string
-    {
-        if ('jsonapi' === $this->format) {
-            return Serializer::FORMAT_JSON;
-        }
-
-        if ('array' === $this->format) {
-            return Serializer::FORMAT_ARRAY;
-        }
-
-        return Serializer::FORMAT_JSON;
-    }
-
-    private function getSpecification(): string
-    {
-        if ('jsonapi' === $this->format) {
-            return Serializer::SPEC_JSONAPI;
-        }
-
-        return Serializer::SPEC_ARRAY;
-    }
-
-    private function getFormatSpecificHeaders(): array
-    {
-        if ('jsonapi' === $this->format) {
-            return ['Content-Type' => 'application/vnd.api+json'];
-        }
-
-        return [];
-    }
-
-    /**
-     * Is the given resource an collection of resources ?
-     *
-     * @param mixed $resource
-     *
-     * @return bool
-     */
-    private function isCollection($resource): bool
-    {
-        // This is a resource presented as an array
-        if (is_array($resource) && count($resource) === count($resource, COUNT_RECURSIVE)) {
-            return false;
-        }
-
-        // It's a collection
-        if (is_array($resource) || $resource instanceof \Traversable) {
-            return true;
-        }
-
-        return false;
+        return $this->resourceProvider->getResource($result, $request);
     }
 }

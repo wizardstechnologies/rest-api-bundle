@@ -33,12 +33,11 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $exception = $event->getException();
         $response = new Response();
         $response->setContent(json_encode(['errors' => $this->getErrorBody($exception)]));
+        $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
 
         if ($exception instanceof HttpExceptionInterface || $exception instanceof HttpException) {
             $response->setStatusCode($exception->getStatusCode());
             $response->headers->replace(['content-type' => 'application/vnd.api+json']);
-        } else {
-            $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         $event->setResponse($response);
@@ -47,7 +46,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
     /**
      * Formats the error body.
      *
-     * @param $exception
+     * @param \Exception $exception
      *
      * @return array
      */

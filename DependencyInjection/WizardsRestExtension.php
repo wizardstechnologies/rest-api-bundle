@@ -7,43 +7,15 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 use Symfony\Component\DependencyInjection\Loader;
 use Symfony\Component\DependencyInjection\Reference;
-use Wizards\RestBundle\Subscriber\SerializationSubscriber;
-use WizardsRest\ObjectReader\ArrayReader;
-use WizardsRest\ObjectReader\DoctrineAnnotationReader;
-use WizardsRest\Paginator\ArrayPagerfantaPaginator;
-use WizardsRest\Paginator\DoctrineOrmPagerFantaPaginator;
+use Wizards\RestBundle\Services\FormatOptions;
 use WizardsRest\Provider;
 use WizardsRest\Serializer;
 
+/**
+ * Injects the proper service definition according to the configuration.
+ */
 class WizardsRestExtension extends Extension
 {
-    private function getPaginatorClass(array $config)
-    {
-        if (isset($config['data_source']) && 'orm' === $config['data_source']) {
-            return DoctrineOrmPagerFantaPaginator::class;
-        }
-
-        return ArrayPagerfantaPaginator::class;
-    }
-
-    private function getReaderClass(array $config)
-    {
-        if ('annotation' === $config['reader']) {
-            return DoctrineAnnotationReader::class;
-        }
-
-        return ArrayReader::class;
-    }
-
-    private function getReaderArguments(array $config, ContainerBuilder $container): array
-    {
-        if ('annotation' === $config['reader']) {
-            return [new Reference('annotation_reader')];
-        }
-
-        return [];
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -51,13 +23,14 @@ class WizardsRestExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
+        $configurator = new WizardsRestConfigurator();
 
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
         // configure the paginator
         $paginatorDefinition = $container->getDefinition('wizards_rest.paginator');
-        $paginatorDefinition->setClass($this->getPaginatorClass($config));
+        $paginatorDefinition->setClass($configurator->getPaginatorClass($config));
 
         // configure the serializer
         $serializerDefinition = $container->getDefinition(Serializer::class);
@@ -65,15 +38,20 @@ class WizardsRestExtension extends Extension
 
         // configure the reader
         $readerDefinition = $container->getDefinition('wizards_rest.reader');
-        $readerDefinition->setClass($this->getReaderClass($config));
-        $readerDefinition->setArguments($this->getReaderArguments($config, $container));
+        $readerDefinition->setClass($configurator->getReaderClass($config));
+        $readerDefinition->setArguments($configurator->getReaderArguments($config));
 
         // configure the provider
         $subscriberDefinition = $container->getDefinition(Provider::class);
         $subscriberDefinition->addArgument(new Reference('wizards_rest.reader'));
 
-        // configure the subscriber
-        $subscriberDefinition = $container->getDefinition(SerializationSubscriber::class);
-        $subscriberDefinition->addArgument($config['format']);
+        // configure the format options
+        $formatDefinition = $container->getDefinition(FormatOptions::class);
+        $formatDefinition->addArgument($config['format']);
+
+        // configure the object manager
+        $managerDefinition = $container->getDefinition('wizards_rest.object_manager');
+        $managerDefinition->setClass($configurator->getObjectManagerClass($config));
+        $managerDefinition->setArguments($configurator->getObjectManagerArguments($config));
     }
 }
