@@ -46,7 +46,7 @@ class WizardsRestExtension extends Extension
         $subscriberDefinition->addArgument(new Reference('wizards_rest.reader'));
 
         // configure the format options
-        $formatDefinition = $container->getDefinition(FormatOptions::class);
+        $formatDefinition = $container->getDefinition('wizards_rest.format_options_getter');
         $formatDefinition->addArgument($config['format']);
 
         // configure the object manager
