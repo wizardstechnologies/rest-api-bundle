@@ -151,11 +151,17 @@ class ResourceProvider
      */
     private function getTransformer($result)
     {
-        return is_array($result) && (isset($result['id']) || isset($result[0]['id']))
-            ? function ($data) {
-                return $data;
+        if (is_array($result)) {
+            if (is_object(current($result))) {
+                return null;
             }
-            : null;
+
+            return function ($data) {
+                return $data;
+            };
+        }
+
+        return null;
     }
 
 
@@ -169,7 +175,7 @@ class ResourceProvider
     private function isCollection($resource): bool
     {
         // This is a resource presented as an array
-        if (is_array($resource) && count($resource) === count($resource, COUNT_RECURSIVE)) {
+        if (is_array($resource) && count($resource) === count($resource, COUNT_RECURSIVE) && !empty($resource)) {
             return false;
         }
 
