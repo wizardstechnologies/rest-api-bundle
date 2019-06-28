@@ -3,12 +3,13 @@
 namespace Wizards\RestBundle\Subscriber;
 
 use League\Fractal\Resource\ResourceAbstract;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Wizards\RestBundle\Services\FormatOptions;
 use Wizards\RestBundle\Services\ResourceProvider;
 use WizardsRest\Serializer;
@@ -24,7 +25,7 @@ class SerializationSubscriber implements EventSubscriberInterface
     private $serializer;
 
     /**
-     * @var DiactorosFactory
+     * @var PsrHttpFactory
      */
     private $psrFactory;
     /**
@@ -43,7 +44,8 @@ class SerializationSubscriber implements EventSubscriberInterface
         FormatOptions $optionsFormatter
     ) {
         $this->serializer = $serializer;
-        $this->psrFactory = new DiactorosFactory();
+        $psr17Factory = new Psr17Factory();
+        $this->psrFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
         $this->resourceProvider = $resourceProvider;
         $this->optionsFormatter = $optionsFormatter;
     }

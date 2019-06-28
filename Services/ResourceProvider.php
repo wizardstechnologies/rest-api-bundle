@@ -6,7 +6,6 @@ use Doctrine\Common\Annotations\Reader;
 use League\Fractal\Resource\Collection;
 use League\Fractal\Resource\ResourceAbstract;
 use Psr\Http\Message\ServerRequestInterface;
-use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use WizardsRest\Annotation\Type;
 use WizardsRest\Paginator\PaginatorInterface;
 use WizardsRest\Provider;
@@ -29,11 +28,6 @@ class ResourceProvider
     private $paginator;
 
     /**
-     * @var DiactorosFactory
-     */
-    private $psrFactory;
-
-    /**
      * @var Reader
      */
     private $reader;
@@ -51,7 +45,6 @@ class ResourceProvider
         $this->provider = $provider;
         $this->paginator = $paginator;
         $this->reader = $reader;
-        $this->psrFactory = new DiactorosFactory();
     }
 
     /**

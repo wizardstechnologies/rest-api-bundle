@@ -5,7 +5,8 @@ namespace Wizards\RestBundle\ParamConverter;
 use Psr\Http\Message\ServerRequestInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Sensio\Bundle\FrameworkExtraBundle\Request\ParamConverter\ParamConverterInterface;
-use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -18,8 +19,10 @@ class Psr7ParamConverter implements ParamConverterInterface
      */
     public function apply(Request $request, ParamConverter $configuration)
     {
-        $psrFactory = new DiactorosFactory();
-        $request->attributes->set($configuration->getName(), $psrFactory->createRequest($request));
+        $psr17Factory = new Psr17Factory();
+        $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
+
+        $request->attributes->set($configuration->getName(), $psrHttpFactory->createRequest($request));
 
         return true;
     }
