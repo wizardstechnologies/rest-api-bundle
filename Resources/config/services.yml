@@ -53,3 +53,5 @@ services:
     Wizards\RestBundle\Subscriber\ExceptionSubscriber:
         tags:
             - { name: kernel.event_subscriber }
+        arguments:
+            - '@logger'
