@@ -2,6 +2,7 @@
 
 namespace Wizards\RestBundle\Subscriber;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
@@ -15,6 +16,16 @@ use WizardsRest\Exception\HttpException;
  */
 class ExceptionSubscriber implements EventSubscriberInterface
 {
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
+
     /**
      * @return array
      */
@@ -31,6 +42,9 @@ class ExceptionSubscriber implements EventSubscriberInterface
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
         $exception = $event->getException();
+
+        $this->logger->log('error', $exception->getMessage());
+
         $response = new Response();
         $response->setContent(json_encode(['errors' => $this->getErrorBody($exception)]));
         $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
