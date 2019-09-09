@@ -8,11 +8,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Throwable;
 use Wizards\RestBundle\Exception\MultiPartHttpException;
+use Wizards\RestBundle\Services\FormatOptions;
 use WizardsRest\Exception\HttpException;
+use WizardsRest\Serializer;
 
 /**
- * Serializes a controller output to a configured format response.
+ * When an exception happen, this subscriber helps to serialize it the rest way.
  */
 class ExceptionSubscriber implements EventSubscriberInterface
 {
@@ -21,14 +24,17 @@ class ExceptionSubscriber implements EventSubscriberInterface
      */
     private $logger;
 
-    public function __construct(LoggerInterface $logger)
+    /**
+     * @var FormatOptions
+     */
+    private $formatOptions;
+
+    public function __construct(LoggerInterface $logger, FormatOptions $formatOptions)
     {
         $this->logger = $logger;
+        $this->formatOptions = $formatOptions;
     }
 
-    /**
-     * @return array
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -36,9 +42,6 @@ class ExceptionSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @param GetResponseForExceptionEvent $event
-     */
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
         $exception = $event->getException();
@@ -46,35 +49,62 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $this->logger->log('error', $exception->getMessage());
 
         $response = new Response();
-        $response->setContent(json_encode(['errors' => $this->getErrorBody($exception)]));
         $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
+        $response->setContent('Internal Server Error');
 
         if ($exception instanceof HttpExceptionInterface || $exception instanceof HttpException) {
+            $content = $this->getErrorResponseContent($exception);
+
             $response->setStatusCode($exception->getStatusCode());
-            $response->headers->replace(['content-type' => 'application/vnd.api+json']);
+
+            if ($content !== null) {
+                $response->setContent($content);
+            }
         }
+
+        $response->headers->replace($this->formatOptions->getFormatSpecificHeaders());
 
         $event->setResponse($response);
     }
 
     /**
-     * Formats the error body.
+     * @param HttpExceptionInterface|HttpException $exception
      *
-     * @param \Exception $exception
-     *
-     * @return array
+     * @return null|string
      */
-    private function getErrorBody($exception)
+    private function getErrorResponseContent($exception): ?string
     {
-        if ($exception instanceof MultiPartHttpException) {
-            return array_map(
+        $errorMessages = $this->getErrorMessages($exception);
+
+        // If the error has no specific text, use the common text for this code
+        if (!$errorMessages[0] && isset(Response::$statusTexts[$exception->getStatusCode()])) {
+            $errorMessages = [Response::$statusTexts[$exception->getStatusCode()]];
+        }
+
+        if (Serializer::SPEC_JSONAPI === $this->formatOptions->getSpecification()) {
+            $errorMessages = \array_map(
                 function ($error) {
                     return ['detail' => $error];
                 },
-                $exception->getMessageList()
+                $errorMessages
             );
         }
 
-        return [['detail' => $exception->getMessage()]];
+        $encodedContent = \json_encode(['errors' => $errorMessages]);
+
+        if ($encodedContent === false) {
+            return null;
+        }
+
+        return $encodedContent;
+    }
+
+    private function getErrorMessages($exception): array
+    {
+        if ($exception instanceof MultiPartHttpException) {
+            return $exception->getMessageList();
+        }
+
+        return [$exception->getMessage()];
     }
 }
