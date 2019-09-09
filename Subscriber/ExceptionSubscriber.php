@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Wizards\RestBundle\Exception\MultiPartHttpException;
 use WizardsRest\Exception\HttpException;
 
@@ -17,18 +18,21 @@ use WizardsRest\Exception\HttpException;
 class ExceptionSubscriber implements EventSubscriberInterface
 {
     /**
+     * @var KernelInterface
+     */
+    private $kernel;
+
+    /**
      * @var LoggerInterface
      */
     private $logger;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(KernelInterface $kernel, LoggerInterface $logger)
     {
+        $this->kernel = $kernel;
         $this->logger = $logger;
     }
 
-    /**
-     * @return array
-     */
     public static function getSubscribedEvents(): array
     {
         return [
@@ -36,9 +40,6 @@ class ExceptionSubscriber implements EventSubscriberInterface
         ];
     }
 
-    /**
-     * @param GetResponseForExceptionEvent $event
-     */
     public function onKernelException(GetResponseForExceptionEvent $event)
     {
         $exception = $event->getException();
@@ -46,8 +47,11 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $this->logger->log('error', $exception->getMessage());
 
         $response = new Response();
-        $response->setContent(json_encode(['errors' => $this->getErrorBody($exception)]));
         $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
+
+        if ($this->kernel->isDebug()) {
+            $response->setContent(\json_encode(['errors' => $this->getErrorBody($exception)]));
+        }
 
         if ($exception instanceof HttpExceptionInterface || $exception instanceof HttpException) {
             $response->setStatusCode($exception->getStatusCode());
@@ -57,17 +61,10 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $event->setResponse($response);
     }
 
-    /**
-     * Formats the error body.
-     *
-     * @param \Exception $exception
-     *
-     * @return array
-     */
-    private function getErrorBody($exception)
+    private function getErrorBody($exception): array
     {
         if ($exception instanceof MultiPartHttpException) {
-            return array_map(
+            return \array_map(
                 function ($error) {
                     return ['detail' => $error];
                 },

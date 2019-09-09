@@ -56,6 +56,7 @@ services:
         tags:
             - { name: kernel.event_subscriber }
         arguments:
+            - '@kernel'
             - '@logger'
 
     wizards_rest.psr7_param_converter:
