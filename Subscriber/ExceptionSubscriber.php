@@ -9,6 +9,7 @@ use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Throwable;
 use Wizards\RestBundle\Exception\MultiPartHttpException;
 use WizardsRest\Exception\HttpException;
 
@@ -49,8 +50,17 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $response = new Response();
         $response->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR);
 
-        if ($this->kernel->isDebug()) {
-            $response->setContent(\json_encode(['errors' => $this->getErrorBody($exception)]));
+        if ($this->kernel->isDebug()
+            || (
+                ($exception instanceof HttpExceptionInterface || $exception instanceof HttpException)
+                && $exception->getStatusCode() !== 500
+            )
+        ) {
+            $content = $this->getErrorResponseContent($exception);
+
+            if ($content !== null) {
+                $response->setContent($content);
+            }
         }
 
         if ($exception instanceof HttpExceptionInterface || $exception instanceof HttpException) {
@@ -61,17 +71,32 @@ class ExceptionSubscriber implements EventSubscriberInterface
         $event->setResponse($response);
     }
 
-    private function getErrorBody($exception): array
+    private function getErrorResponseContent(Throwable $exception): ?string
     {
-        if ($exception instanceof MultiPartHttpException) {
-            return \array_map(
-                function ($error) {
-                    return ['detail' => $error];
-                },
-                $exception->getMessageList()
-            );
+        $errorMessages = $this->getErrorMessages($exception);
+
+        $errors = \array_map(
+            function ($error) {
+                return ['detail' => $error];
+            },
+            $errorMessages
+        );
+
+        $encodedContent = \json_encode(['errors' => $errors]);
+
+        if ($encodedContent === false) {
+            return null;
         }
 
-        return [['detail' => $exception->getMessage()]];
+        return $encodedContent;
+    }
+
+    private function getErrorMessages(Throwable $exception): array
+    {
+        if ($exception instanceof MultiPartHttpException) {
+            return $exception->getMessageList();
+        }
+
+        return [$exception->getMessage()];
     }
 }
