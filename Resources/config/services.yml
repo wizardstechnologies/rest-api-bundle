@@ -57,6 +57,7 @@ services:
             - { name: kernel.event_subscriber }
         arguments:
             - '@logger'
+            - '@wizards_rest.format_options_getter'
 
     wizards_rest.psr7_param_converter:
         class: Wizards\RestBundle\ParamConverter\Psr7ParamConverter
