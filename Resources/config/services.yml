@@ -32,6 +32,9 @@ services:
             - '@wizards_rest.entity_transformer'
             - '@wizards_rest.fractal_manager'
 
+    Wizards\RestBundle\Services\FormatOptions:
+        alias: wizards_rest.format_options_getter
+
     wizards_rest.format_options_getter:
         class: Wizards\RestBundle\Services\FormatOptions
 
