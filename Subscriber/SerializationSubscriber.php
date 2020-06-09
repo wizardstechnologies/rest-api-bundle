@@ -59,12 +59,20 @@ class SerializationSubscriber implements EventSubscriberInterface
      */
     public function onKernelView(GetResponseForControllerResultEvent $event): void
     {
+        $serializedResponse = $this->serializer->serialize(
+            $this->getResource($event),
+            $this->optionsFormatter->getSpecification(),
+            $this->optionsFormatter->getFormat()
+        );
+
+        // This nasty condition can be used in case another output format than json is configured
+        // that is not supported by the library yet
+        if (is_array($serializedResponse)) {
+            $serializedResponse = print_r($serializedResponse, true);
+        }
+
         $event->setResponse(new Response(
-            $this->serializer->serialize(
-                $this->getResource($event),
-                $this->optionsFormatter->getSpecification(),
-                $this->optionsFormatter->getFormat()
-            ),
+            $serializedResponse,
             200,
             $this->optionsFormatter->getFormatSpecificHeaders()
         ));
