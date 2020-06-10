@@ -7,14 +7,14 @@ It will help you conceive mature and discoverable APIs, thanks to the jsonapi sp
 Regardless of the output serialization, the request format will be the same.
 Have a look at http://github.com/wizardstechnologies/php-rest-api for further documentation and explanations.
 
+# Requirements
+```
+symfony >= 4
+```
+
 # Install
 ```
 composer require wizards/rest-bundle
-```
-
-Register it in your AppKernel
-```
-new Wizards\RestBundle\WizardsRestBundle(),
 ```
 
 # Configure

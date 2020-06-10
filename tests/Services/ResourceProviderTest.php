@@ -19,7 +19,7 @@ class ResourceProviderTest extends TestCase
 
     private $request;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->provider = $this->createMock(Provider::class);
         $this->paginator = $this
@@ -31,14 +31,14 @@ class ResourceProviderTest extends TestCase
         $this->request = $this->createMock(ServerRequestInterface::class);
     }
 
-    public function testEmptyArrayIsPaginated()
+    public function testEmptyArrayIsPaginated(): void
     {
         $resourceProvider = new ResourceProvider($this->provider, $this->paginator, $this->reader);
         $this->paginator->expects($this->once())->method('paginate');
         $resourceProvider->getResource([], $this->request);
     }
 
-    public function testObjectArrayIsPaginated()
+    public function testObjectArrayIsPaginated(): void
     {
         $resourceProvider = new ResourceProvider($this->provider, $this->paginator, $this->reader);
         $this->paginator->expects($this->never())->method('paginate');
@@ -47,21 +47,21 @@ class ResourceProviderTest extends TestCase
         $resourceProvider->getResource([$object, $object2], $this->request);
     }
 
-    public function testResourceArrayIsPaginated()
+    public function testResourceArrayIsPaginated(): void
     {
         $resourceProvider = new ResourceProvider($this->provider, $this->paginator, $this->reader);
         $this->paginator->expects($this->once())->method('paginate');
         $resourceProvider->getResource([['id' => 1, 'name' => 'test']], $this->request);
     }
 
-    public function testResourceIsNotPaginated()
+    public function testResourceIsNotPaginated(): void
     {
         $resourceProvider = new ResourceProvider($this->provider, $this->paginator, $this->reader);
         $this->paginator->expects($this->never())->method('paginate');
         $resourceProvider->getResource(['id' => 1, 'name' => 'test'], $this->request);
     }
 
-    public function testObjectIsNotPaginated()
+    public function testObjectIsNotPaginated(): void
     {
         $resourceProvider = new ResourceProvider($this->provider, $this->paginator, $this->reader);
         $this->paginator->expects($this->never())->method('paginate');

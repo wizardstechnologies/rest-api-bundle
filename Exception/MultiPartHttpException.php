@@ -25,7 +25,7 @@ class MultiPartHttpException extends \WizardsRest\Exception\HttpException
         parent::__construct($statusCode, 'Multi-Part Error');
     }
 
-    public function getMessageList()
+    public function getMessageList(): array
     {
         return $this->messageList;
     }

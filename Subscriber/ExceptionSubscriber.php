@@ -5,10 +5,9 @@ namespace Wizards\RestBundle\Subscriber;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
-use Throwable;
 use Wizards\RestBundle\Exception\MultiPartHttpException;
 use Wizards\RestBundle\Services\FormatOptions;
 use WizardsRest\Exception\HttpException;
@@ -42,9 +41,9 @@ class ExceptionSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onKernelException(GetResponseForExceptionEvent $event)
+    public function onKernelException(ExceptionEvent $event): void
     {
-        $exception = $event->getException();
+        $exception = $event->getThrowable();
 
         $this->logger->log('error', $exception->getMessage());
 
@@ -72,13 +71,15 @@ class ExceptionSubscriber implements EventSubscriberInterface
      *
      * @return null|string
      */
-    private function getErrorResponseContent($exception): ?string
+    private function getErrorResponseContent(\Throwable $exception): ?string
     {
         $errorMessages = $this->getErrorMessages($exception);
+        // @TODO: This is an ugly fix for phpmd, until 2.9 release
+        $statusTexts = Response::$statusTexts;
 
         // If the error has no specific text, use the common text for this code
-        if (!$errorMessages[0] && isset(Response::$statusTexts[$exception->getStatusCode()])) {
-            $errorMessages = [Response::$statusTexts[$exception->getStatusCode()]];
+        if (!$errorMessages[0] && isset($statusTexts[$exception->getStatusCode()])) {
+            $errorMessages = [$statusTexts[$exception->getStatusCode()]];
         }
 
         if (Serializer::SPEC_JSONAPI === $this->formatOptions->getSpecification()) {
@@ -99,7 +100,7 @@ class ExceptionSubscriber implements EventSubscriberInterface
         return $encodedContent;
     }
 
-    private function getErrorMessages($exception): array
+    private function getErrorMessages(\Throwable $exception): array
     {
         if ($exception instanceof MultiPartHttpException) {
             return $exception->getMessageList();
