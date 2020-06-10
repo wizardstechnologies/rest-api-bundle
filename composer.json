@@ -13,7 +13,7 @@
   "require": {
     "php": ">=7.3",
     "ext-json": "*",
-    "wizards/rest-api": "0.7.3",
+    "wizards/rest-api": "dev-master#037566cf587420b5df34031f5cd633f7dc2154b6",
     "symfony/http-kernel": "^4.1|^5.0",
     "symfony/psr-http-message-bridge": "^2.0.0",
     "sensio/framework-extra-bundle": "^5.2",
