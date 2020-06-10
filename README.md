@@ -9,7 +9,7 @@ Have a look at http://github.com/wizardstechnologies/php-rest-api for further do
 
 # Requirements
 ```
-symfony >= 4
+symfony >= 4.3
 ```
 
 # Install

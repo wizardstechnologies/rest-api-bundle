@@ -7,7 +7,7 @@ use Nyholm\Psr7\Factory\Psr17Factory;
 use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
+use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Wizards\RestBundle\Services\FormatOptions;
@@ -50,6 +50,14 @@ class SerializationSubscriber implements EventSubscriberInterface
         $this->optionsFormatter = $optionsFormatter;
     }
 
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            KernelEvents::VIEW => 'onKernelView',
+            KernelEvents::CONTROLLER => 'onKernelController'
+        ];
+    }
+
     /**
      * Catches returns from Controllers, and serialize their content.
      *
@@ -81,23 +89,15 @@ class SerializationSubscriber implements EventSubscriberInterface
     /**
      * Stores a link to a controller. Useful to read its annotations.
      *
-     * @param FilterControllerEvent $event
+     * @param ControllerEvent $event
      */
-    public function onKernelController(FilterControllerEvent $event): void
+    public function onKernelController(ControllerEvent $event): void
     {
         $controller = $event->getController();
 
         if (is_array($controller)) {
             $this->resourceProvider->setController($controller);
         }
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::VIEW => 'onKernelView',
-            KernelEvents::CONTROLLER => 'onKernelController'
-        ];
     }
 
     /**
