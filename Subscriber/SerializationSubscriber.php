@@ -8,7 +8,7 @@ use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
-use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
+use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Wizards\RestBundle\Services\FormatOptions;
 use Wizards\RestBundle\Services\ResourceProvider;
@@ -60,12 +60,8 @@ class SerializationSubscriber implements EventSubscriberInterface
 
     /**
      * Catches returns from Controllers, and serialize their content.
-     *
-     * @param GetResponseForControllerResultEvent $event
-     *
-     * @throws \ReflectionException
      */
-    public function onKernelView(GetResponseForControllerResultEvent $event): void
+    public function onKernelView(ViewEvent $event): void
     {
         $serializedResponse = $this->serializer->serialize(
             $this->getResource($event),
@@ -88,8 +84,6 @@ class SerializationSubscriber implements EventSubscriberInterface
 
     /**
      * Stores a link to a controller. Useful to read its annotations.
-     *
-     * @param ControllerEvent $event
      */
     public function onKernelController(ControllerEvent $event): void
     {
@@ -103,14 +97,8 @@ class SerializationSubscriber implements EventSubscriberInterface
     /**
      * Transforms a entity or a collection to a Fractal resource.
      * If it is a collection, paginate it.
-     *
-     * @param GetResponseForControllerResultEvent $event
-     *
-     * @return ResourceAbstract
-     *
-     * @throws \ReflectionException
      */
-    private function getResource(GetResponseForControllerResultEvent $event): ResourceAbstract
+    private function getResource(ViewEvent $event): ResourceAbstract
     {
         $request = $this->psrFactory->createRequest($event->getRequest());
         $result = $event->getControllerResult();
