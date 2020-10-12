@@ -7,7 +7,7 @@
   "authors": [
     {
       "name": "Romain Richard",
-      "email": "rrichard.ext@wedigital.garden"
+      "email": "bigzounet@hotmail.com"
     }
   ],
   "require": {
@@ -18,7 +18,7 @@
     "symfony/http-kernel": "^4.1|^5.0",
     "symfony/psr-http-message-bridge": "^2.0.0",
     "sensio/framework-extra-bundle": "^5.2",
-    "wizards/rest-api": "dev-master@dev"
+    "wizards/rest-api": "0.8.0"
   },
   "require-dev": {
     "symfony/form": "^4.1",
