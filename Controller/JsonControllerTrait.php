@@ -3,8 +3,10 @@
 namespace Wizards\RestBundle\Controller;
 
 use InvalidArgumentException;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\ConstraintViolation;
 use Wizards\RestBundle\Exception\MultiPartHttpException;
 
 /**
@@ -84,7 +86,7 @@ trait JsonControllerTrait
         $errors = [];
 
         foreach ($form->getErrors() as $error) {
-            $errors[] = $error->getMessage();
+            $errors[] = $this->getTopLevelErrorMessage($error);
         }
 
         foreach ($form->all() as $key => $child) {
@@ -96,5 +98,15 @@ trait JsonControllerTrait
         }
 
         return $errors;
+    }
+
+    private function getTopLevelErrorMessage(FormError $error)
+    {
+        $cause = $error->getCause();
+        if ($cause instanceof ConstraintViolation) {
+            return \sprintf('%s: %s', $cause->getPropertyPath(), $error->getMessage());
+        }
+
+        return $error->getMessage();
     }
 }
