@@ -61,6 +61,10 @@ class ExceptionSubscriber implements EventSubscriberInterface
             }
         }
 
+        if ($exception instanceof \InvalidArgumentException) {
+            $response->setStatusCode(400);
+            $response->setContent($this->getErrorResponseContent($exception));
+        }
         $response->headers->replace($this->formatOptions->getFormatSpecificHeaders());
 
         $event->setResponse($response);
@@ -77,8 +81,8 @@ class ExceptionSubscriber implements EventSubscriberInterface
         // @TODO: This is an ugly fix for phpmd, until 2.9 release
         $statusTexts = Response::$statusTexts;
 
-        // If the error has no specific text, use the common text for this code
-        if (!$errorMessages[0] && isset($statusTexts[$exception->getStatusCode()])) {
+        // If the error has no specific text, use the common text for this code.
+        if (empty($errorMessages) && isset($statusTexts[$exception->getStatusCode()])) {
             $errorMessages = [$statusTexts[$exception->getStatusCode()]];
         }
 
