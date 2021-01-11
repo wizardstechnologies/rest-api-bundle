@@ -51,11 +51,6 @@ class ResourceProvider
      * Transforms a entity or a collection to a Fractal resource.
      * If it is a collection, paginate it.
      *
-     * @param mixed $result
-     * @param ServerRequestInterface $request
-     *
-     * @return ResourceAbstract
-     *
      * @throws \ReflectionException
      */
     public function getResource($result, ServerRequestInterface $request): ResourceAbstract
@@ -81,9 +76,6 @@ class ResourceProvider
         return $resource;
     }
 
-    /**
-     * @param array $controller
-     */
     public function setController(array $controller): void
     {
         $this->controller = $controller;
@@ -91,8 +83,6 @@ class ResourceProvider
 
     /**
      * Try to get the resource name/type by annotation, first on the method then on the class of the controller.
-     *
-     * @return string|null
      *
      * @throws \ReflectionException
      */
@@ -138,8 +128,6 @@ class ResourceProvider
      * @TODO: it might not feel really natural that the entity transformer is the default one.
      * We might want a simpler default, or no default at all. Discussion is open !
      *
-     * @param mixed $result
-     *
      * @return \Closure|null
      */
     private function getTransformer($result)
@@ -159,11 +147,7 @@ class ResourceProvider
 
 
     /**
-     * Is the given resource an collection of resources ?
-     *
-     * @param mixed $resource
-     *
-     * @return bool
+     * Is the given resource a collection of resources ?
      */
     private function isCollection($resource): bool
     {

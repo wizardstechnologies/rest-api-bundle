@@ -12,6 +12,7 @@ use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Wizards\RestBundle\Services\FormatOptions;
 use Wizards\RestBundle\Services\ResourceProvider;
+use WizardsRest\RestView;
 use WizardsRest\Serializer;
 
 /**
@@ -75,9 +76,11 @@ class SerializationSubscriber implements EventSubscriberInterface
             $serializedResponse = print_r($serializedResponse, true);
         }
 
+        $result = $event->getControllerResult();
+
         $event->setResponse(new Response(
             $serializedResponse,
-            200,
+            $result instanceof RestView ? $result->getCode() : 200,
             $this->optionsFormatter->getFormatSpecificHeaders()
         ));
     }
@@ -102,6 +105,10 @@ class SerializationSubscriber implements EventSubscriberInterface
     {
         $request = $this->psrFactory->createRequest($event->getRequest());
         $result = $event->getControllerResult();
+
+        if ($result instanceof RestView) {
+            $result = $result->getContent();
+        }
 
         return $this->resourceProvider->getResource($result, $request);
     }
