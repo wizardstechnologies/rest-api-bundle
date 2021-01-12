@@ -16,9 +16,6 @@ use WizardsRest\Serializer;
  */
 class WizardsRestExtension extends Extension
 {
-    /**
-     * {@inheritdoc}
-     */
     public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();

@@ -20,10 +20,7 @@ trait JsonControllerTrait
     }
 
     /**
-     * Transform a json request body to a valid symfony form and submits it.
-     *
-     * @param FormInterface $form
-     * @param Request $request
+     * Transform a json request body to a valid symfony form and submit it.
      */
     protected function handleJsonForm(FormInterface $form, Request $request)
     {

@@ -68,7 +68,6 @@ class ExceptionSubscriber implements EventSubscriberInterface
 
     /**
      * @param HttpException|HttpExceptionInterface $exception
-     * @return null|string
      */
     private function getErrorResponseContent($exception): ?string
     {

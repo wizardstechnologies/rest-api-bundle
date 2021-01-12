@@ -12,12 +12,6 @@ class MultiPartHttpException extends \WizardsRest\Exception\HttpException
      */
     private $messageList;
 
-    /**
-     * MultiPartHttpException constructor.
-     *
-     * @param int $statusCode
-     * @param array $messageList
-     */
     public function __construct(int $statusCode = 500, array $messageList = ['Internal Server Error.'])
     {
         $this->messageList = $messageList;
