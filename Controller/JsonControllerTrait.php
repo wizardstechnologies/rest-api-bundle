@@ -2,12 +2,12 @@
 
 namespace Wizards\RestBundle\Controller;
 
-use InvalidArgumentException;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\ConstraintViolation;
 use Wizards\RestBundle\Exception\MultiPartHttpException;
+use WizardsRest\Exception\HttpException;
 
 /**
  * A trait that helps in building restful json controllers.
@@ -20,21 +20,18 @@ trait JsonControllerTrait
     }
 
     /**
-     * Transform a json request body to a valid symfony form and submits it.
-     *
-     * @param FormInterface $form
-     * @param Request $request
+     * Transform a json request body to a valid symfony form and submit it.
      */
     protected function handleJsonForm(FormInterface $form, Request $request)
     {
         $body = $this->decode($request, $form);
 
         if (empty($body)) {
-            throw new InvalidArgumentException('invalid, empty or not json/jsonapi body provided');
+            throw new HttpException(400, 'invalid, empty or not json/jsonapi body provided');
         }
 
         if (empty($body[$form->getName()])) {
-            throw new InvalidArgumentException(sprintf('json should contain a %s key', $form->getName()));
+            throw new HttpException(400, sprintf('json should contain a %s key', $form->getName()));
         }
 
         $form->submit($body[$form->getName()], $request->getMethod() !== 'PATCH');
@@ -76,12 +73,8 @@ trait JsonControllerTrait
 
     /**
      * Transform form errors in a simple array.
-     *
-     * @param FormInterface $form
-     *
-     * @return array
      */
-    private function convertFormErrorsToArray(FormInterface $form)
+    private function convertFormErrorsToArray(FormInterface $form): array
     {
         $errors = [];
 

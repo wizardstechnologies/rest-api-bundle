@@ -14,9 +14,6 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class Psr7ParamConverter implements ParamConverterInterface
 {
-    /**
-     * @inheritdoc
-     */
     public function apply(Request $request, ParamConverter $configuration)
     {
         $psr17Factory = new Psr17Factory();
@@ -27,9 +24,6 @@ class Psr7ParamConverter implements ParamConverterInterface
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function supports(ParamConverter $configuration)
     {
         if ($configuration->getClass() == ServerRequestInterface::class) {
