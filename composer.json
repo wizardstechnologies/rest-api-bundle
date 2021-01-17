@@ -16,10 +16,10 @@
     "nyholm/psr7": "^1.1",
     "pagerfanta/pagerfanta": "^2.0",
     "symfony/http-kernel": "^4.4|^5.0",
-    "symfony/psr-http-message-bridge": "^2.0.0",
+    "symfony/psr-http-message-bridge": "^2.0",
     "symfony/validator": "^4.4|^5.0",
     "sensio/framework-extra-bundle": "^5.2",
-    "wizards/rest-api": "0.8.2"
+    "wizards/rest-api": "0.9.0"
   },
   "require-dev": {
     "symfony/form": "^4.4|^5.0",
